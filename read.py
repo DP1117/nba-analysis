@@ -26,5 +26,3 @@ for player in players:
         for row in reader:
             career_matrix.append(row)
     career_matrices[player] = career_matrix
-
-print(career_matrices['Kyrie Irving'])
