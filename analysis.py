@@ -1,8 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
-import pandas as pd
 import csv
+
+def print_pc_loadings(eigenvectors, stat_names, start=1, end=3):
+    print(f"\n=== Principal Component Loadings (PC{start} to PC{end}) ===\n")
+    for pc_idx in range(start-1, end):
+        print(f"PC{pc_idx+1}:")
+        eigenvector = eigenvectors[:, pc_idx]
+        for stat, loading in sorted(zip(stat_names, eigenvector), key=lambda x: abs(x[1]), reverse=True):
+            print(f"{stat:20s}: {loading:.4f}")
+        print()
 
 filename = 'players.txt'
 
@@ -78,6 +85,9 @@ plt.ylabel("PC2")
 plt.grid(True)
 plt.show()
 
+print_pc_loadings(eigenvectors, stat_names, start=1, end=2)
+
+
 coords_3d = career_data @ eigenvectors[:, :3]
 
 fig = plt.figure(figsize=(10, 8))
@@ -100,15 +110,6 @@ plt.show()
 plt.tight_layout()
 plt.show()
 
-def print_pc_loadings(eigenvectors, stat_names, start=1, end=3):
-    print(f"\n=== Principal Component Loadings (PC{start} to PC{end}) ===\n")
-    for pc_idx in range(start-1, end):
-        print(f"PC{pc_idx+1}:")
-        eigenvector = eigenvectors[:, pc_idx]
-        for stat, loading in sorted(zip(stat_names, eigenvector), key=lambda x: abs(x[1]), reverse=True):
-            print(f"{stat:20s}: {loading:.4f}")
-        print()
-
 print_pc_loadings(eigenvectors, stat_names, start=1, end=3)
 
 def plot_pc_loadings_bar(eigenvectors, stat_names, pc_index=0):
@@ -129,26 +130,3 @@ def plot_pc_loadings_bar(eigenvectors, stat_names, pc_index=0):
 plot_pc_loadings_bar(eigenvectors, stat_names, pc_index=0)  # PC1
 plot_pc_loadings_bar(eigenvectors, stat_names, pc_index=1)  # PC2
 plot_pc_loadings_bar(eigenvectors, stat_names, pc_index=2)  # PC3
-
-def plot_pc_heatmap(eigenvectors, stat_names, num_pcs=3, top_n=10):
-    pc_data = {}
-    for i in range(num_pcs):
-        component = eigenvectors[:, i]
-        abs_component = np.abs(component)
-        top_stats_idx = np.argsort(abs_component)[-top_n:]
-        for idx in top_stats_idx:
-            stat = stat_names[idx]
-            if stat not in pc_data:
-                pc_data[stat] = [0] * num_pcs
-            pc_data[stat][i] = component[idx]
-
-    df = pd.DataFrame(pc_data).T
-    df.columns = [f'PC{i+1}' for i in range(num_pcs)]
-
-    plt.figure(figsize=(8, max(6, 0.4 * len(df))))
-    sns.heatmap(df, annot=True, center=0, cmap='coolwarm')
-    plt.title(f'Top {top_n} Stat Loadings for First {num_pcs} PCs')
-    plt.tight_layout()
-    plt.show()
-
-plot_pc_heatmap(eigenvectors, stat_names, num_pcs=3, top_n=10)
